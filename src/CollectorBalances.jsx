@@ -160,9 +160,12 @@ function CollectorBalances() {
 
           <div
             ref={breakdownRef}
-            class="flex flex-col gap-4 items-start justify-around fade-in"
+            class="flex flex-col gap-4 items-stretch justify-around fade-in"
             c
           >
+            <div class="text-center text-gray-700">
+              Adjust Slider to select token range
+            </div>
             <div class="w-full">
               <div class="range-slider" ref={rangeRef}>
                 <input type="range" />
