@@ -6,11 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build-css": "tailwind build -i src/index.css -o src/output.css",
     "preview": "vite preview",
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "axios": "^1.6.4",
+    "range-slider-input": "^2.4.4",
     "solid-js": "^1.8.7"
   },
   "devDependencies": {

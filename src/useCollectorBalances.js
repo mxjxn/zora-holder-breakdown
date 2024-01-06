@@ -5,6 +5,7 @@ import { getInstances, getHolders } from "./api";
 export function useCollectorBalances() {
   const [totalItems, setTotalItems] = createSignal(0);
   const [balances, setBalances] = createSignal({});
+  const [completed, setCompleted] = createSignal(false); // [false, setCompleted
   const totalCollectors = createMemo(() => {
     const currentBalances = balances();
     console.log("rendering total collectors");
@@ -30,7 +31,6 @@ export function useCollectorBalances() {
 
   const updateBalances = (newHolders, index) => {
     setBalances((prevBalances) => {
-      console.log({ prevBalances, newHolders });
       const updatedBalances = { ...prevBalances };
       const addressBalances = newHolders.map((holder) => ({
         address: holder.address.hash.toLowerCase(),
@@ -51,6 +51,8 @@ export function useCollectorBalances() {
 
   async function getCollectorBalances(address) {
     let response;
+    setCompleted(false);
+    setTotalItems(0);
     setBalances({});
     setLogMessages([]);
     try {
@@ -99,13 +101,17 @@ export function useCollectorBalances() {
       } while (hasNextPage);
       addLogMessage("Found " + tokenHolderCount + " holders for item " + i);
     }
+    setCompleted(true);
+    addLogMessage("Completed");
   }
 
   return {
     balances,
     getCollectorBalances,
+    totalItems,
     totalCollectors,
     collectedAll,
     logMessages,
+    completed,
   };
 }
