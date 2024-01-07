@@ -4,22 +4,22 @@ import rangeSlider from "range-slider-input";
 import "range-slider-input/dist/style.css";
 
 import { useCollectorBalances } from "./useCollectorBalances";
+import ChainSelector from "./ChainSelector";
 import { Card } from "./Card";
 import Clipr from "./Clipr";
 
-const EXPLORER_API_URL = "https://explorer.zora.energy/api/v2";
 
 function CollectorBalances() {
   let breakdownRef, logsRef, rangeRef, totalRef;
   let slider;
   let rangeSliderSet = false;
   const [contractAddress, setContractAddress] = createSignal("");
+  const [apiEndpoint, setApiEndpoint] = createSignal("");
   const {
     balances,
     getCollectorBalances,
     totalItems,
     totalCollectors,
-    collectedAll,
     logMessages,
     completed,
   } = useCollectorBalances();
@@ -30,7 +30,9 @@ function CollectorBalances() {
       return;
     }
     logsRef.classList.add("fade-in-active");
-    await getCollectorBalances(contractAddress(contractAddress())).catch(
+    // TODO also pass in the api url
+    console.log("api endpoint", apiEndpoint());
+    await getCollectorBalances(apiEndpoint(), contractAddress(contractAddress())).catch(
       (error) => {
         console.error(error);
       }
@@ -45,6 +47,17 @@ function CollectorBalances() {
       return "collectors holding all tokens";
     }
     return `collectors holding ${start} thru ${end}`;
+  });
+
+  // add up all the balances for each token individually
+  const tokenTotals = createMemo(() => {
+    const _balances = Object.values(balances());
+    if (_balances.length == 0) return new Array(0).fill(0);
+    const result = _balances.reduce(
+      (acc, cur) => acc.map((balance, i) => balance + cur[i]),
+      new Array(_balances[0].length).fill(0)
+    );
+    return result;
   });
 
   const rangeHolders = createMemo(() => {
@@ -96,7 +109,7 @@ function CollectorBalances() {
   return (
     <div class="flex flex-col gap-8 items-center justify-between">
       <form onSubmit={handleSubmit}>
-        <div class="flex flex-row items-center justify-between">
+        <div class="flex flex-row items-start justify-between">
           <div class="w-72">
             <label class="mr-2">Enter your Zora NFT Contract Address:</label>
             <div class="rounded-lg py-1 px-0 bg-gray-200 w-72 flex flex-row items-center h-10">
@@ -129,21 +142,34 @@ function CollectorBalances() {
               />
             </div>
           </div>
+          <ChainSelector onSelected={setApiEndpoint} />
           <button
             class="btn border border-slate-500 hover:border-slate-400 active:border-slate-100 rounded-lg p-2 ml-5"
             type="submit"
-          >
-            {" "}
-            Get Balances{" "}
-          </button>
+          >🚀</button>
         </div>
       </form>
       <div class="flex flex-row gap-4 items-start fade-in" ref={logsRef}>
-        <Card title="Logs">
-          <ul class="text-left text-gray-500 italic">
-            <For each={logMessages()}>{(message) => <li>{message}</li>}</For>
-          </ul>
-        </Card>
+        <div class="flex flex-col gap-4">
+          <Card title="Logs">
+            <ul class="text-left text-gray-500 italic">
+              <For each={logMessages()}>{(message) => <li>{message}</li>}</For>
+            </ul>
+          </Card>
+          <div class="text-left">
+            <Card title="# Minted per token">
+              <ol>
+                <For each={tokenTotals()}>
+                  {(item, index) => (
+                    <li>
+                      Token #{index() + 1}: {item}
+                    </li>
+                  )}
+                </For>
+              </ol>
+            </Card>
+          </div>
+        </div>
         <div class="flex flex-col gap-4 items-stretch">
           <div class="flex flex-row gap-4">
             <div>

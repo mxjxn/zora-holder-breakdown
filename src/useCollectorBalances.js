@@ -49,14 +49,14 @@ export function useCollectorBalances() {
     });
   };
 
-  async function getCollectorBalances(address) {
+  async function getCollectorBalances(apiUrl, address) {
     let response;
     setCompleted(false);
     setTotalItems(0);
     setBalances({});
     setLogMessages([]);
     try {
-      response = await getInstances(address);
+      response = await getInstances(apiUrl, address);
     } catch (error) {
       console.error(error);
     }
@@ -76,7 +76,7 @@ export function useCollectorBalances() {
         let response;
 
         try {
-          response = await getHolders(address, i, next_page_params);
+          response = await getHolders(apiUrl, address, i, next_page_params);
         } catch (error) {
           console.error(error);
           continue;
